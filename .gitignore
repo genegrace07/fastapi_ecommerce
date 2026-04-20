@@ -2,3 +2,4 @@
 .idea
 .env
 querry.py
+__pycache__/
