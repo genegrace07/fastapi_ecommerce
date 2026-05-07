@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends
 from routers.product import product_router
 from routers.user import user_router
+from routers.auth import auth_router
 import mysql.connector
 import os
 from dotenv import load_dotenv
@@ -10,6 +11,7 @@ from ecommercedb import Users
 app = FastAPI()
 app.include_router(product_router)
 app.include_router(user_router)
+app.include_router(auth_router)
 load_dotenv()
 
 @app.on_event("startup")

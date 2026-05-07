@@ -31,5 +31,8 @@ async def admin_registration(form:User,service:Users=Depends(user_service)):
     service.save_user(username,hash_pwd,role='admin')
     return {'message':'added successfully'}
 
-#DUPLICATE USERNAME THRU MYSQL? ADMIN OR NORMAL USER FOR REGISTRATION?
-#COMMIT AND PUSH TO GIT, (user registration)
+#TO BE CONTINUE: test user signup and admin signup
+#ISSUE: STRING CAN ALSO REGISTER BOTH ADMIN AND NORMAL USER
+
+
+
