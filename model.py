@@ -1,5 +1,5 @@
 from pydantic import BaseModel
 
 class User(BaseModel):
-    username:str
-    password:str
+    username:str="username"
+    password:str="password"

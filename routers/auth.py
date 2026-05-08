@@ -30,7 +30,6 @@ async def users_login(form:OAuth2PasswordRequestForm=Depends(),service:Users=Dep
     for_token = jwt.encode(payload,SECRET_KEY,algorithm=ALGORITHM)
     return {'token':for_token,"token_type":"bearer"}
 
-#TO BE CONTINUE: LOGIN SCREEN(PAYLOAD), PUSH TO GIT
 
 
 

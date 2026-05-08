@@ -27,8 +27,15 @@ def start_up():
 """
 USERS/ADMIN
 #create default admin on start
-normal - #view products,add to cart,update order,delete order,checkout,
-	 #register,login,change password
+normal - #view products
+         add to cart
+         update order
+         delete order
+         checkout
+	    #register
+	    #login
+	    change password admin login
+	    
 admin - view products,update product list,delete product,
 	create admin,delete user,update password of user 
 
