@@ -27,12 +27,14 @@ async def admin_registration(form:User,service:Users=Depends(user_service),check
     username = form.username
     password = form.password
     get_user = service.get_username(username)
-    if username == "username" or password == "password":
-        raise HTTPException(status_code=400,detail="default cant be use, input username and password")
+    print(get_user)
+    print(check_token)
     if not check_token:
         raise HTTPException(status_code=402,detail="token expired of invalid")
-    if check_token['role'] != 'admin':
+    if check_token['roles'] != 'admin':
         raise HTTPException(status_code=403,detail='no permission')
+    if username == "username" or password == "password":
+        raise HTTPException(status_code=400,detail="default cant be use, input username and password")
     if not username or not str(username).strip() or not password or not str(password).strip():
         raise HTTPException(status_code=400, detail='username or password cannot be blank')
     if get_user:

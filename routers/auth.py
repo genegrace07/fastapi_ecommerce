@@ -26,9 +26,9 @@ async def users_login(form:OAuth2PasswordRequestForm=Depends(),service:Users=Dep
     check_password = sha256_crypt.verify(password,check_username['passwd'])
     if not check_password:
         raise HTTPException(status_code=400,detail='wrong password')
-    payload = {"id":check_username['user_id'],"username":check_username['username'],"exp":datetime.utcnow()+timedelta(minutes=token_exp)}
+    payload = {"id":check_username['user_id'],"username":check_username['username'],"roles":check_username['roles'],"exp":datetime.utcnow()+timedelta(minutes=token_exp)}
     for_token = jwt.encode(payload,SECRET_KEY,algorithm=ALGORITHM)
-    return {'token':for_token,"token_type":"bearer"}
+    return {"access_token":for_token,"token_type":"bearer"}
 
 
 
