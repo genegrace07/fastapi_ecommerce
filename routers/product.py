@@ -7,9 +7,8 @@ product_router = APIRouter(prefix='/product',tags=['product'])
 def product_service(request:Request):
     return Product(request.app.state.db)
 @product_router.get('/product_lists')
-def list_product(service:Product=Depends(product_service),check_token:dict=Depends(verify_token)):
-         if check_token:
-            return service.product_list()
+def list_product(service:Product=Depends(product_service),_:dict=Depends(verify_token)):
+        return service.product_list()
 
 
 

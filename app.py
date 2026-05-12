@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends
 from routers.product import product_router
-from routers.user import user_router
+from routers.user import user_router,admin_router
 from routers.auth import auth_router
 import mysql.connector
 import os
@@ -10,6 +10,7 @@ from ecommercedb import Users
 
 app = FastAPI()
 app.include_router(product_router)
+app.include_router(admin_router)
 app.include_router(user_router)
 app.include_router(auth_router)
 load_dotenv()
@@ -36,8 +37,8 @@ normal - #view products
 	    #login
 	    change password admin login
 	    
-admin - view products,update product list,delete product,
-	create admin,delete user,update password of user 
+admin - view products,update product list,delete product,view users
+	#create admin user,delete user,update password of user 
 
 DATABASE
 users > orders > order_items
