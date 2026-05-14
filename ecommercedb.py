@@ -41,6 +41,20 @@ class Users(Dbconnection):
         result = dbcursor.fetchone()
         dbcursor.close()
         return result
-
+    def get_user_id(self,id):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True,buffered=True)
+        query = 'select * from user where user_id = %s'
+        dbcursor.execute(query,(id,))
+        result = dbcursor.fetchone()
+        dbcursor.close()
+        return result
+    def update_password(self,id,password):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True,buffered=True)
+        querry = 'update user set passwd=%s where user_id=%s'
+        dbcursor.execute(querry,(password,id,))
+        dbcursor.close()
+        self.db.commit()
 
 
