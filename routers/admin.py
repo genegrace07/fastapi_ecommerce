@@ -31,7 +31,6 @@ async def view_users(service:Users=Depends(user_service),payload:dict=Depends(ve
         raise HTTPException(status_code=403,detail='no permission')
     view_users = service.get_users()
     return view_users
-
 @admin_router.put('/update_password')
 async def password_update(id:int,new_pwd:str,service:Users=Depends(user_service),payload:dict=Depends(verify_token)):
     if payload.get('roles') != 'admin':
@@ -44,6 +43,17 @@ async def password_update(id:int,new_pwd:str,service:Users=Depends(user_service)
     hash_password = sha256_crypt.hash(new_pwd)
     service.update_password(id,hash_password)
     return {'message':'password successfully updated'}
+@admin_router.delete('/delete_user')
+async def user_delete(id:int,service:Users=Depends(user_service),payload:dict=Depends(verify_token)):
+    if payload.get('roles') != 'admin':
+        raise HTTPException(status_code=403,detail='no permission')
+    get_id = service.get_user_id(id)
+    if payload.get('id') == id:
+        raise HTTPException(status_code=400,detail='currently login, cannot be delete')
+    if not get_id:
+        raise HTTPException(status_code=404,detail='user id not found')
+    service.delete_user(id)
+    return {'message':'successfully deleted'}
 
-#TO BE CONTINUE: update password for admin access only and test it, and update git
-                #create admin_verify function?
+#TO BE CONTINUE: delete user for admin access only,cannot be delete while login in, and update git
+                #dont show pwd in view user

@@ -44,7 +44,7 @@ admin - view products
         #view users
 	    #create admin user
 	    delete user
-	    update password of user 
+	    #update password of user 
 
 DATABASE
 users > orders > order_items
