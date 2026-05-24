@@ -39,7 +39,7 @@ normal - #view products
 	     change password admin login
 	    
 admin - #view products
-        update product list
+        #update product list
         delete product
         #view users
 	    #create admin user

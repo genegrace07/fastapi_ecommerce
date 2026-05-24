@@ -74,10 +74,19 @@ def product_update(form:ProductModel,service:Product=Depends(product_service),pa
     quantity =  specific_prod['quantity'] if quantity <= 0 else quantity
     service.update_product(prod_id,item,price,quantity)
     return {'message':'successfully added'}
+@admin_router.delete('/delete_product')
+def product_delete(product_id:int,service:Product=Depends(product_service),payload:dict=Depends(verify_token)):
+    if payload.get('roles') != 'admin':
+        raise HTTPException(status_code=401,detail='no permission')
+    data = service.product_list()
+    product_id_list = [d['product_id'] for d in data]
+    if product_id not in product_id_list:
+        raise HTTPException(status_code=404,detail='product id not found')
+    service.delete_product(product_id)
+    return {'message':'deleted successfully'}
     
-#WRONG ENTRY WHEN NOT FILL OUT
-'''TO BE CONTINUE: #view products
-        update product list
-        delete product and update git
+#
+'''TO BE CONTINUE:  always update git
+                    delete product
 '''
 
