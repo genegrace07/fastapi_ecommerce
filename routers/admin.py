@@ -1,13 +1,14 @@
 from fastapi import APIRouter,Depends,HTTPException,Request
 from verify import verify_token
-from ecommercedb import Users
+from ecommercedb import Users,Product
 from passlib.hash import sha256_crypt
-from model import User
+from model import User,Product as ProductModel
 
 admin_router = APIRouter(prefix='/admin',tags=['admin'])
 def user_service(request:Request):
     return Users(request.app.state.db)
-
+def product_service(request:Request):
+    return Product(request.app.state.db)
 @admin_router.post('/register_admin')
 async def admin_registration(form:User,service:Users=Depends(user_service),check_token:dict=Depends(verify_token)):
     username = form.username
@@ -30,7 +31,8 @@ async def view_users(service:Users=Depends(user_service),payload:dict=Depends(ve
     if payload.get('roles') != 'admin':
         raise HTTPException(status_code=403,detail='no permission')
     view_users = service.get_users()
-    return view_users
+    view_users_no_pwd = [{'user_id':v.get('user_id'),'username':v.get('username'),'role':v.get('roles')} for v in view_users]
+    return view_users_no_pwd
 @admin_router.put('/update_password')
 async def password_update(id:int,new_pwd:str,service:Users=Depends(user_service),payload:dict=Depends(verify_token)):
     if payload.get('roles') != 'admin':
@@ -54,6 +56,28 @@ async def user_delete(id:int,service:Users=Depends(user_service),payload:dict=De
         raise HTTPException(status_code=404,detail='user id not found')
     service.delete_user(id)
     return {'message':'successfully deleted'}
+@admin_router.put('/update_product')
+def product_update(form:ProductModel,service:Product=Depends(product_service),payload:dict=Depends(verify_token)):
+    prod_id = form.product_id
+    item = form.item
+    price = form.price
+    quantity = form.quantity
+    if payload.get('roles') != 'admin':
+        raise HTTPException(status_code=403,detail='no permission')
+    data = service.product_list()
+    get_product_id = [d['product_id'] for d in data]
+    if prod_id not in get_product_id:
+        raise HTTPException(status_code=404,detail='product id not found')
+    specific_prod = service.get_product(prod_id)
+    item =  item if item is None else specific_prod['item']
+    price =  specific_prod['price'] if price <= 0 else price
+    quantity =  specific_prod['quantity'] if quantity <= 0 else quantity
+    service.update_product(prod_id,item,price,quantity)
+    return {'message':'successfully added'}
+    
+#WRONG ENTRY WHEN NOT FILL OUT
+'''TO BE CONTINUE: #view products
+        update product list
+        delete product and update git
+'''
 
-#TO BE CONTINUE: delete user for admin access only,cannot be delete while login in, and update git
-                #dont show pwd in view user

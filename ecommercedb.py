@@ -17,6 +17,21 @@ class Product(Dbconnection):
         result = dbcursor.fetchall()
         dbcursor.close()
         return result
+    def update_product(self,product_id,item,price,quantity):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True,buffered=True)
+        query = 'update product set item=%s,price=%s,quantity=%s where product_id=%s'
+        dbcursor.execute(query,(item,price,quantity,product_id))
+        dbcursor.close()
+        self.db.commit()
+    def get_product(self,product_id):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True,buffered=True)
+        query = 'select * from product where product_id = %s'
+        dbcursor.execute(query,(product_id,))
+        result = dbcursor.fetchone()
+        dbcursor.close()
+        return result
 class Users(Dbconnection):
     def get_users(self):
         self.db.ping(reconnect=True)

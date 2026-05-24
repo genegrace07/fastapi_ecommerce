@@ -38,12 +38,12 @@ normal - #view products
 	     #login
 	     change password admin login
 	    
-admin - view products
+admin - #view products
         update product list
         delete product
         #view users
 	    #create admin user
-	    delete user
+	    #delete user
 	    #update password of user 
 
 DATABASE
