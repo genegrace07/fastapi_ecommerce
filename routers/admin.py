@@ -69,11 +69,11 @@ def product_update(form:ProductModel,service:Product=Depends(product_service),pa
     if prod_id not in get_product_id:
         raise HTTPException(status_code=404,detail='product id not found')
     specific_prod = service.get_product(prod_id)
-    item =  item if item is None else specific_prod['item']
+    item =   specific_prod['item'] if item in [None,"","string"] else item
     price =  specific_prod['price'] if price <= 0 else price
     quantity =  specific_prod['quantity'] if quantity <= 0 else quantity
     service.update_product(prod_id,item,price,quantity)
-    return {'message':'successfully added'}
+    return {'message':'successfully updated'}
 @admin_router.delete('/delete_product')
 def product_delete(product_id:int,service:Product=Depends(product_service),payload:dict=Depends(verify_token)):
     if payload.get('roles') != 'admin':
@@ -85,8 +85,3 @@ def product_delete(product_id:int,service:Product=Depends(product_service),paylo
     service.delete_product(product_id)
     return {'message':'deleted successfully'}
     
-#
-'''TO BE CONTINUE:  always update git
-                    delete product
-'''
-

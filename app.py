@@ -3,6 +3,7 @@ from routers.product import product_router
 from routers.user import user_router
 from routers.auth import auth_router
 from routers.admin import admin_router
+from routers.order import order_router
 import mysql.connector
 import os
 from dotenv import load_dotenv
@@ -14,6 +15,7 @@ app.include_router(product_router)
 app.include_router(admin_router)
 app.include_router(user_router)
 app.include_router(auth_router)
+app.include_router(order_router)
 load_dotenv()
 
 @app.on_event("startup")
@@ -40,7 +42,7 @@ normal - #view products
 	    
 admin - #view products
         #update product list
-        delete product
+        #delete product
         #view users
 	    #create admin user
 	    #delete user
@@ -72,8 +74,8 @@ user
 /update_password_of_any_user - admin
 
 AUTHENTICATION
-generate token
-protect routes
+#generate token
+#protect routes
 
 HTML (BASIC DISPLAY) 
 """

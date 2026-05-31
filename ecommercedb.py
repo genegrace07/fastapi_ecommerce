@@ -85,6 +85,37 @@ class Users(Dbconnection):
         dbcursor.execute(query,(id,))
         dbcursor.close()
         self.db.commit()
-
+class Order(Dbconnection):
+    def create_order(self,user_id):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True,buffered=True)
+        query = 'insert into orders(user_id) values(%s)'
+        dbcursor.execute(query,(user_id,))
+        self.db.commit()
+        order_id = dbcursor.lastrowid
+        dbcursor.close()
+        return order_id
+    def add_to_order_item(self,product_id,order_id,quantity,item_name,price,total):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True,buffered=True)
+        query = 'insert into order_item(product_id,order_id,quantity,item_name,price,total) values(%s,%s,%s,%s,%s,%s)'
+        dbcursor.execute(query,(product_id,order_id,quantity,item_name,price,total))
+        dbcursor.close()
+        self.db.commit()
+    def store_order(self,product_id,order_id,quantity,item_name,total):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True,buffered=True)
+        query = 'insert into order_item(product_id,order_id,quantity,item_name,total) values(%s,%s,%s,%s,%s)'
+        dbcursor.execute(query,(product_id,order_id,quantity,item_name,total))
+        dbcursor.close()
+        self.db.commit()
+    def get_order_item(self):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True,buffered=True)
+        query = 'select * from order_item'
+        dbcursor.execute(query)
+        result = dbcursor.fetchall()
+        dbcursor.close()
+        return result
 
 
