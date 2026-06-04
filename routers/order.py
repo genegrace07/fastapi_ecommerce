@@ -17,18 +17,22 @@ def create_order(id:int,quantity:int,payload:dict=Depends(verify_token),order_se
     if quantity <= 0:
         raise HTTPException(status_code=400,detail='quantity must be greater than 0')
 
-    user_id = payload.get('id')
-    order_id = order_services.create_order(user_id)
-
     get_product = product_services.get_product(id)
+    item_name = get_product.get('item')
+    user_id = payload.get('id')
     total = quantity * get_product.get('price')
     price = get_product.get('price')
-    item_name = get_product.get('item')
+    has_pending = order_services.has_pending(user_id)
+    order_id = has_pending['order_id']
+    if has_pending:
+        order_services.add_to_order_item(id,order_id,quantity,item_name,price,total)
+        return {'message':'item added successfully'}
+    order_services.create_order(user_id)
     order_services.add_to_order_item(id,order_id,quantity,item_name,price,total)
-    print(get_product)
     return {'message':'item added successfully'}
 
-#ADD TO CART DONE, CREATE ANOTHER ROUTE FOR CHECKOUT
+#def get_order_item(self,order_id):
+#ADD TO CART DONE, query existing order id if pending
 #NOTE: jinbei is admin, brook is user only
 '''
     def store_order(self,product_id,order_id,quantity,item_name,total):

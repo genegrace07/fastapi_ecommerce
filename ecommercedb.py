@@ -109,12 +109,36 @@ class Order(Dbconnection):
         dbcursor.execute(query,(product_id,order_id,quantity,item_name,total))
         dbcursor.close()
         self.db.commit()
-    def get_order_item(self):
+    def has_pending(self,user_id):
         self.db.ping(reconnect=True)
         dbcursor = self.db.cursor(dictionary=True,buffered=True)
-        query = 'select * from order_item'
-        dbcursor.execute(query)
-        result = dbcursor.fetchall()
+        query = 'select * from orders where user_id = %s and status = "pending"'
+        dbcursor.execute(query,(user_id,))
+        result = dbcursor.fetchone()
+        dbcursor.close()
+        return result
+    def get_order(self,order_id):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True,buffered=True)
+        query = 'select * from orders where order_id = %s'
+        dbcursor.execute(query,(order_id,))
+        result = dbcursor.fetchone()
+        dbcursor.close()
+        return result
+    def get_order_item(self,order_id):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True,buffered=True)
+        query = 'select * from order_item where order_id = %s'
+        dbcursor.execute(query,(order_id,))
+        result = dbcursor.fetchone()
+        dbcursor.close()
+        return result
+    def get_order_id(self,order_id,status):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True,buffered=True)
+        query = 'select * from orders where order_id = %s and status = "pending"'
+        dbcursor.execute(query,(order_id,status))
+        result = dbcursor.fetchone()
         dbcursor.close()
         return result
 
