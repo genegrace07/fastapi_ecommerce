@@ -117,6 +117,14 @@ class Order(Dbconnection):
         result = dbcursor.fetchone()
         dbcursor.close()
         return result
+    def create_new_order(self,user_id):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True,buffered=True)
+        query = 'select * from orders where user_id = %s'
+        dbcursor.execute(query,(user_id,))
+        result = dbcursor.fetchone()
+        dbcursor.close()
+        return result['order_id']
     def get_order(self,order_id):
         self.db.ping(reconnect=True)
         dbcursor = self.db.cursor(dictionary=True,buffered=True)
@@ -141,5 +149,34 @@ class Order(Dbconnection):
         result = dbcursor.fetchone()
         dbcursor.close()
         return result
-
+    def get_grand_total(self,order_id):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True,buffered=True)
+        query = 'select sum(total) as grand_total from order_item where order_id = %s'
+        dbcursor.execute(query,(order_id,))
+        result = dbcursor.fetchone()
+        dbcursor.close()
+        return result['grand_total']
+    def update_grand_total(self,order_id,grand_total):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True,buffered=True)
+        query = 'update orders set grand_total = %s where order_id = %s'
+        dbcursor.execute(query,(grand_total,order_id))
+        dbcursor.close()
+        self.db.commit()
+    def get_order_count(self,order_id):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True,buffered=True)
+        query = 'select count(item_name) as order_counts from order_item where order_id = %s'
+        dbcursor.execute(query,(order_id,))
+        result = dbcursor.fetchone()
+        dbcursor.close()
+        return result['order_counts']
+    def update_order_count(self,user_id,order_count):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True,buffered=True)
+        query = 'update orders set order_count = %s where user_id = %s'
+        dbcursor.execute(query,(order_count,user_id))
+        dbcursor.close()
+        self.db.commit()
 
