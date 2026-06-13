@@ -21,6 +21,8 @@ async def users_login(form:OAuth2PasswordRequestForm=Depends(),service:Users=Dep
     username = form.username
     password = form.password
     check_username = service.get_username(username)
+    if not check_username.get('active'):
+        raise HTTPException(status_code=400,detail='user not active')
     if not check_username:
         raise HTTPException(status_code=400,detail='username not found')
     check_password = sha256_crypt.verify(password,check_username['passwd'])

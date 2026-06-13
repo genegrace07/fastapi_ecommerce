@@ -85,12 +85,19 @@ class Users(Dbconnection):
         dbcursor.execute(query,(id,))
         dbcursor.close()
         self.db.commit()
-class Order(Dbconnection):
-    def create_order(self,user_id):
+    def disable_user(self,id):
         self.db.ping(reconnect=True)
         dbcursor = self.db.cursor(dictionary=True,buffered=True)
-        query = 'insert into orders(user_id) values(%s)'
-        dbcursor.execute(query,(user_id,))
+        query = 'update user set active = false where user_id = %s'
+        dbcursor.execute(query,(id,))
+        dbcursor.close()
+        self.db.commit()
+class Order(Dbconnection):
+    def create_order(self,user_id,customer_name):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True,buffered=True)
+        query = 'insert into orders(user_id,customer_name) values(%s,%s)'
+        dbcursor.execute(query,(user_id,customer_name))
         self.db.commit()
         order_id = dbcursor.lastrowid
         dbcursor.close()
@@ -124,7 +131,7 @@ class Order(Dbconnection):
         dbcursor.execute(query,(user_id,))
         result = dbcursor.fetchone()
         dbcursor.close()
-        return result['order_id']
+        return result
     def get_order(self,order_id):
         self.db.ping(reconnect=True)
         dbcursor = self.db.cursor(dictionary=True,buffered=True)
@@ -177,6 +184,24 @@ class Order(Dbconnection):
         dbcursor = self.db.cursor(dictionary=True,buffered=True)
         query = 'update orders set order_count = %s where user_id = %s'
         dbcursor.execute(query,(order_count,user_id))
+        dbcursor.close()
+        self.db.commit()
+    def view_order(self,order_id):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True,buffered=True)
+        query = '''select oi.id,oi.item_name,oi.quantity,oi.price,oi.total from orders as o 
+                   join order_item as oi on o.order_id = oi.order_id
+                   where o.order_id = %s
+                '''
+        dbcursor.execute(query,(order_id,))
+        result = dbcursor.fetchall()
+        dbcursor.close()
+        return result
+    def cancel_order(self,user_id):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True,buffered=True)
+        query = 'update orders set status = "cancel" where user_id = %s'
+        dbcursor.execute(query,(user_id,))
         dbcursor.close()
         self.db.commit()
 

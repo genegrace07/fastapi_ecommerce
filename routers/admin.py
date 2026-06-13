@@ -1,6 +1,6 @@
 from fastapi import APIRouter,Depends,HTTPException,Request
 from verify import verify_token
-from ecommercedb import Users,Product
+from ecommercedb import Users,Product,Order
 from passlib.hash import sha256_crypt
 from model import User,Product as ProductModel
 
@@ -9,6 +9,8 @@ def user_service(request:Request):
     return Users(request.app.state.db)
 def product_service(request:Request):
     return Product(request.app.state.db)
+def order_service(request:Request):
+    return Order(request.app.state.db)
 @admin_router.post('/register_admin')
 async def admin_registration(form:User,service:Users=Depends(user_service),check_token:dict=Depends(verify_token)):
     username = form.username
@@ -46,15 +48,18 @@ async def password_update(id:int,new_pwd:str,service:Users=Depends(user_service)
     service.update_password(id,hash_password)
     return {'message':'password successfully updated'}
 @admin_router.delete('/delete_user')
-async def user_delete(id:int,service:Users=Depends(user_service),payload:dict=Depends(verify_token)):
+async def user_delete(id:int,service:Users=Depends(user_service),order_service:Order=Depends(order_service),payload:dict=Depends(verify_token)):
     if payload.get('roles') != 'admin':
         raise HTTPException(status_code=403,detail='no permission')
     get_id = service.get_user_id(id)
+    if not get_id.get('active'):
+        raise HTTPException(status_code=400,detail='user already disabled')
     if payload.get('id') == id:
         raise HTTPException(status_code=400,detail='currently login, cannot be delete')
     if not get_id:
         raise HTTPException(status_code=404,detail='user id not found')
-    service.delete_user(id)
+    service.disable_user(id)
+    order_service.cancel_order(id)
     return {'message':'successfully deleted'}
 @admin_router.put('/update_product')
 def product_update(form:ProductModel,service:Product=Depends(product_service),payload:dict=Depends(verify_token)):

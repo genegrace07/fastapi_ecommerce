@@ -32,7 +32,8 @@ def start_up():
 USERS/ADMIN
 #create default admin on start
 normal - #view products
-         add to cart
+         #add to cart
+         view order
          update order
          delete order
          checkout
