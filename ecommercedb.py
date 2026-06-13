@@ -92,6 +92,22 @@ class Users(Dbconnection):
         dbcursor.execute(query,(id,))
         dbcursor.close()
         self.db.commit()
+    def activate_user(self, id):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True, buffered=True)
+        query = 'update user set active = true where user_id = %s'
+        dbcursor.execute(query, (id,))
+        dbcursor.close()
+        self.db.commit()
+    def get_active_user(self, id):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True, buffered=True)
+        query = 'select * from user where user_id = %s and active = true'
+        dbcursor.execute(query, (id,))
+        result = dbcursor.fetchone()
+        dbcursor.close()
+        return result
+
 class Order(Dbconnection):
     def create_order(self,user_id,customer_name):
         self.db.ping(reconnect=True)

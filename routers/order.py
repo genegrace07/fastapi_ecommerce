@@ -24,7 +24,8 @@ def create_order(id:int,quantity:int,payload:dict=Depends(verify_token),order_se
     total = quantity * get_product.get('price')
     price = get_product.get('price')
     has_pending = order_services.has_pending(user_id)
-
+    # status = has_pending.get('status')
+    # print(has_pending)
     if has_pending:
         order_id = has_pending['order_id']
         order_services.add_to_order_item(id,order_id,quantity,item_name,price,total)
@@ -32,10 +33,11 @@ def create_order(id:int,quantity:int,payload:dict=Depends(verify_token),order_se
         order_services.update_grand_total(order_id, grand_total)
         order_count = order_services.get_order_count(order_id)
         order_services.update_order_count(user_id,order_count)
-        print(order_count)
+        # print(order_count)
         return {'message':'cart update successfully'}
     order_services.create_order(user_id,customer_name)
-    order_id = order_services.create_new_order(user_id)
+    get_order_id = order_services.create_new_order(user_id)
+    order_id = get_order_id.get('order_id')
     order_services.add_to_order_item(id,order_id,quantity,item_name,price,total)
     grand_total = order_services.get_grand_total(order_id)
     order_services.update_grand_total(order_id, grand_total)
@@ -56,8 +58,8 @@ def view_order(payload:dict=Depends(verify_token),order_services:Order=Depends(o
 
 #ALWAYS UPDATE GIT
 #NOTE: jinbei is admin, brook is user only
-#ONGOING: view order, done adding view order route, next is organize json output, add active column on order
-#column for deleting, pending status on order will be canceled.
+#ONGOING: view order, done adding view order route, next is organize json output
+#create user delete permanent with on cascade
 
 '''
 TO BE CONTINUE:  always update git

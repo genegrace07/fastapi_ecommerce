@@ -47,8 +47,8 @@ async def password_update(id:int,new_pwd:str,service:Users=Depends(user_service)
     hash_password = sha256_crypt.hash(new_pwd)
     service.update_password(id,hash_password)
     return {'message':'password successfully updated'}
-@admin_router.delete('/delete_user')
-async def user_delete(id:int,service:Users=Depends(user_service),order_service:Order=Depends(order_service),payload:dict=Depends(verify_token)):
+@admin_router.put('/disable_user')
+async def user_disable(id:int,service:Users=Depends(user_service),order_service:Order=Depends(order_service),payload:dict=Depends(verify_token)):
     if payload.get('roles') != 'admin':
         raise HTTPException(status_code=403,detail='no permission')
     get_id = service.get_user_id(id)
@@ -60,9 +60,20 @@ async def user_delete(id:int,service:Users=Depends(user_service),order_service:O
         raise HTTPException(status_code=404,detail='user id not found')
     service.disable_user(id)
     order_service.cancel_order(id)
+    return {'message':'user inactive'}
+@admin_router.delete('user_delete')
+async def delete_user(id:int,service:Users=Depends(user_service),order_service:Order=Depends(order_service),payload:dict=Depends(verify_token)):
+    if payload.get('roles') != 'admin':
+        raise HTTPException(status_code=403,detail='no permission')
+    get_id = service.get_user_id(id)
+    if payload.get('id') == id:
+        raise HTTPException(status_code=400,detail='currently login, cannot be delete')
+    if not get_id:
+        raise HTTPException(status_code=404,detail='user id not found')
+    service.delete_user(id)
     return {'message':'successfully deleted'}
 @admin_router.put('/update_product')
-def product_update(form:ProductModel,service:Product=Depends(product_service),payload:dict=Depends(verify_token)):
+async def product_update(form:ProductModel,service:Product=Depends(product_service),payload:dict=Depends(verify_token)):
     prod_id = form.product_id
     item = form.item
     price = form.price
@@ -80,7 +91,7 @@ def product_update(form:ProductModel,service:Product=Depends(product_service),pa
     service.update_product(prod_id,item,price,quantity)
     return {'message':'successfully updated'}
 @admin_router.delete('/delete_product')
-def product_delete(product_id:int,service:Product=Depends(product_service),payload:dict=Depends(verify_token)):
+async def product_delete(product_id:int,service:Product=Depends(product_service),payload:dict=Depends(verify_token)):
     if payload.get('roles') != 'admin':
         raise HTTPException(status_code=401,detail='no permission')
     data = service.product_list()
@@ -89,4 +100,17 @@ def product_delete(product_id:int,service:Product=Depends(product_service),paylo
         raise HTTPException(status_code=404,detail='product id not found')
     service.delete_product(product_id)
     return {'message':'deleted successfully'}
-    
+@admin_router.put('/activate_user')
+async def user_activate(id:int,user_service:Users=Depends(user_service),payload:dict=Depends(verify_token)):
+    if payload.get('roles') != 'admin':
+        return HTTPException(status_code=401,detail='no permission')
+    get_user_id = user_service.get_users()
+    user_id_list = [g['user_id'] for g in get_user_id]
+    if id not in user_id_list:
+        return HTTPException(status_code=404,detail='id not found')
+    user_active = user_service.get_active_user(id)
+    if user_active:
+        return HTTPException(status_code=400,detail='id already active')
+    user_service.activate_user(id)
+    return {'message':'user activated'}
+    #get_user_id(self,id): fetchone
