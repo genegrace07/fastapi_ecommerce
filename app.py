@@ -33,7 +33,7 @@ USERS/ADMIN
 #create default admin on start
 normal - #view products
          #add to cart
-         view order
+         #view order
          update order
          delete order
          checkout

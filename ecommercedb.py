@@ -164,6 +164,14 @@ class Order(Dbconnection):
         result = dbcursor.fetchone()
         dbcursor.close()
         return result
+    def get_all_orders(self,order_id):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True,buffered=True)
+        query = 'select * from order_item where order_id = %s'
+        dbcursor.execute(query,(order_id,))
+        result = dbcursor.fetchall()
+        dbcursor.close()
+        return result
     def get_order_id(self,order_id,status):
         self.db.ping(reconnect=True)
         dbcursor = self.db.cursor(dictionary=True,buffered=True)
@@ -205,7 +213,7 @@ class Order(Dbconnection):
     def view_order(self,order_id):
         self.db.ping(reconnect=True)
         dbcursor = self.db.cursor(dictionary=True,buffered=True)
-        query = '''select oi.id,oi.item_name,oi.quantity,oi.price,oi.total from orders as o 
+        query = '''select oi.product_id,oi.item_name,oi.quantity,oi.price,oi.total from orders as o 
                    join order_item as oi on o.order_id = oi.order_id
                    where o.order_id = %s
                 '''
@@ -220,4 +228,20 @@ class Order(Dbconnection):
         dbcursor.execute(query,(user_id,))
         dbcursor.close()
         self.db.commit()
+    def update_order_qty(self,product_id,quantity,total):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True,buffered=True)
+        query = 'update order_item set quantity = %s,total = %s where product_id = %s'
+        dbcursor.execute(query,(quantity,total,product_id))
+        dbcursor.close()
+        self.db.commit()
+    def get_product_to_update(self,order_id,product_id):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True,buffered=True)
+        query = 'select * from order_item where order_id = %s and product_id = %s'
+        dbcursor.execute(query,(order_id,product_id))
+        result = dbcursor.fetchone()
+        dbcursor.close()
+        return result
+
 

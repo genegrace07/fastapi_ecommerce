@@ -9,7 +9,7 @@ def order_service(request:Request):
 def product_service(request:Request):
     return Product(request.app.state.db)
 @order_router.put('/add_order')
-def create_order(id:int,quantity:int,payload:dict=Depends(verify_token),order_services:Order=Depends(order_service),product_services:Product=Depends(product_service)):
+async def create_order(id:int,quantity:int,payload:dict=Depends(verify_token),order_services:Order=Depends(order_service),product_services:Product=Depends(product_service)):
     product_list = product_services.product_list()
     get_product_id = [p['product_id'] for p in product_list]
     if id not in get_product_id:
@@ -46,27 +46,45 @@ def create_order(id:int,quantity:int,payload:dict=Depends(verify_token),order_se
     print(order_count)
     return {'message':'item added successfully'}
 @order_router.get('/order_view')
-def view_order(payload:dict=Depends(verify_token),order_services:Order=Depends(order_service)):
+async def view_order(payload:dict=Depends(verify_token),order_services:Order=Depends(order_service)):
     user_id = payload.get('id')
-    order_id = order_services.create_new_order(user_id)
-    order_id = order_id['order_id']
+    get_order_id = order_services.create_new_order(user_id)
+    if not get_order_id:
+        raise HTTPException(status_code=404,detail='cart is empty')
+    order_id = get_order_id['order_id']
     orders = order_services.view_order(order_id)
-    print(orders)
-    print(order_id)
     return orders
+@order_router.put('order_update')
+async def update_order(id:int,quantity:int,order_service:Order=Depends(order_service),payload:dict=Depends(verify_token)):
+    user_id = payload.get('id')
+    get_order_id = order_service.create_new_order(user_id)
 
+    if not get_order_id:
+        raise HTTPException(status_code=404,detail='cart is empty')
+
+    order_id = get_order_id['order_id']
+    get_orders = order_service.get_all_orders(order_id)
+    product_id_list = [g['product_id'] for g in get_orders]
+    if id not in product_id_list:
+        raise HTTPException(status_code=404,detail='product id not found')
+    price = order_service.get_product_to_update(order_id,id)
+    new_total = quantity * price['price']
+    order_service.update_order_qty(id,quantity,new_total)
+    new_grand_total = order_service.get_grand_total(order_id)
+    order_service.update_grand_total(order_id,new_grand_total)
+    print(price)
+    return {'message':'successfully updated'}
 
 #ALWAYS UPDATE GIT
 #NOTE: jinbei is admin, brook is user only
-#ONGOING: view order, done adding view order route, next is organize json output
-#create user delete permanent with on cascade
+#ONGOING: update order,put user view status if active
 
 '''
 TO BE CONTINUE:  always update git
                  normal user - 
                  #view products
                  #add to cart
-                 view order
+                 #view order
                  update order
                  delete order
                  checkout
