@@ -34,12 +34,12 @@ USERS/ADMIN
 normal - #view products
          #add to cart
          #view order
-         update order
+         #update order
          delete order
          checkout
 	     #register
 	     #login
-	     change password admin login
+	     #change password admin login
 	    
 admin - #view products
         #update product list

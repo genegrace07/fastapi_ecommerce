@@ -140,10 +140,26 @@ class Order(Dbconnection):
         result = dbcursor.fetchone()
         dbcursor.close()
         return result
+    def has_cancel(self, user_id):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True, buffered=True)
+        query = 'select * from orders where user_id = %s and status = "cancel"'
+        dbcursor.execute(query, (user_id,))
+        result = dbcursor.fetchone()
+        dbcursor.close()
+        return result
     def create_new_order(self,user_id):
         self.db.ping(reconnect=True)
         dbcursor = self.db.cursor(dictionary=True,buffered=True)
         query = 'select * from orders where user_id = %s'
+        dbcursor.execute(query,(user_id,))
+        result = dbcursor.fetchone()
+        dbcursor.close()
+        return result
+    def create_new_order_for_return_customer(self,user_id):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True,buffered=True)
+        query = 'select * from orders where user_id = %s and status = "pending"'
         dbcursor.execute(query,(user_id,))
         result = dbcursor.fetchone()
         dbcursor.close()
@@ -210,14 +226,14 @@ class Order(Dbconnection):
         dbcursor.execute(query,(order_count,user_id))
         dbcursor.close()
         self.db.commit()
-    def view_order(self,order_id):
+    def view_order(self,user_id):
         self.db.ping(reconnect=True)
         dbcursor = self.db.cursor(dictionary=True,buffered=True)
         query = '''select oi.product_id,oi.item_name,oi.quantity,oi.price,oi.total from orders as o 
                    join order_item as oi on o.order_id = oi.order_id
-                   where o.order_id = %s
+                   where o.user_id = %s and status = 'pending'
                 '''
-        dbcursor.execute(query,(order_id,))
+        dbcursor.execute(query,(user_id,))
         result = dbcursor.fetchall()
         dbcursor.close()
         return result
@@ -243,5 +259,10 @@ class Order(Dbconnection):
         result = dbcursor.fetchone()
         dbcursor.close()
         return result
-
-
+    def delete_order(self,product_id):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True,buffered=True)
+        query = 'delete from order_item where product_id = %s'
+        dbcursor.execute(query,(product_id,))
+        dbcursor.close()
+        self.db.commit()

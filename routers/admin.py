@@ -33,7 +33,7 @@ async def view_users(service:Users=Depends(user_service),payload:dict=Depends(ve
     if payload.get('roles') != 'admin':
         raise HTTPException(status_code=403,detail='no permission')
     view_users = service.get_users()
-    view_users_no_pwd = [{'user_id':v.get('user_id'),'username':v.get('username'),'role':v.get('roles')} for v in view_users]
+    view_users_no_pwd = [{'user_id':v.get('user_id'),'username':v.get('username'),'role':v.get('roles'),'status':'active' if v.get('active') else 'inactive'} for v in view_users]
     return view_users_no_pwd
 @admin_router.put('/update_password')
 async def password_update(id:int,new_pwd:str,service:Users=Depends(user_service),payload:dict=Depends(verify_token)):
