@@ -35,7 +35,7 @@ normal - #view products
          #add to cart
          #view order
          #update order
-         delete order
+         #delete order
          checkout
 	     #register
 	     #login

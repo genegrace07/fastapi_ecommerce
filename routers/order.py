@@ -39,18 +39,18 @@ async def create_order(id:int,quantity:int,payload:dict=Depends(verify_token),or
         grand_total = order_services.get_grand_total(order_id)
         order_services.update_grand_total(order_id, grand_total)
         order_count = order_services.get_order_count(order_id)
-        order_services.update_order_count(user_id,order_count)
+        order_services.update_order_count(order_count)
         return {'message':'cart update successfully'}
-    if has_canceled:
-        order_services.create_order(user_id, customer_name)
-        get_order_id = order_services.create_new_order_for_return_customer(user_id)
-        order_id = get_order_id.get('order_id')
-        order_services.add_to_order_item(id, order_id, quantity, item_name, price, total)
-        grand_total = order_services.get_grand_total(order_id)
-        order_services.update_grand_total(order_id, grand_total)
-        order_count = order_services.get_order_count(order_id)
-        order_services.update_order_count(user_id, order_count)
-        return {'message': 'item added successfully'}
+    # if has_canceled:
+    #     order_services.create_order(user_id, customer_name)
+    #     get_order_id = order_services.create_new_order_for_return_customer(user_id)
+    #     order_id = get_order_id.get('order_id')
+    #     order_services.add_to_order_item(id, order_id, quantity, item_name, price, total)
+    #     grand_total = order_services.get_grand_total(order_id)
+    #     order_services.update_grand_total(order_id, grand_total)
+    #     # order_count = order_services.get_order_count(order_id)
+    #     # order_services.update_order_count(user_id, order_count)
+    #     return {'message': 'item added successfully'}
     order_services.create_order(user_id,customer_name)
     get_order_id = order_services.create_new_order(user_id)
     order_id = get_order_id.get('order_id')
@@ -58,7 +58,7 @@ async def create_order(id:int,quantity:int,payload:dict=Depends(verify_token),or
     grand_total = order_services.get_grand_total(order_id)
     order_services.update_grand_total(order_id, grand_total)
     order_count = order_services.get_order_count(order_id)
-    order_services.update_order_count(user_id, order_count)
+    order_services.update_order_count(order_count)
     print(order_count)
     return {'message':'item added successfully'}
 @order_router.get('/order_view')
@@ -66,9 +66,11 @@ async def view_order(payload:dict=Depends(verify_token),order_services:Order=Dep
     user_id = payload.get('id')
     get_order_id = order_services.create_new_order(user_id)
     if not get_order_id:
-        raise HTTPException(status_code=404,detail='cart is empty')
+        raise HTTPException(status_code=404, detail='cart is empty')
     order_id = get_order_id['order_id']
-    orders = order_services.view_order(user_id)
+    # if not order_id:
+    #     raise HTTPException(status_code=404,detail='cart is empty')
+    orders = order_services.view_order(order_id)
     if not orders:
         raise HTTPException(status_code=404, detail='cart is empty')
     return orders
@@ -107,21 +109,30 @@ async def delete_order(prod_id:int,order_service:Order=Depends(order_service),pa
     grand_total = order_service.get_grand_total(order_id)
     order_service.update_grand_total(order_id, grand_total)
     order_count = order_service.get_order_count(order_id)
-    order_service.update_order_count(user_id, order_count)
+    order_service.update_order_count(order_count)
     return {'message':'successfully deleted'}
+
+@order_router.get('/for_checkout')
+async def for_checkout(order_service:Order=Depends(order_service),payload:dict=Depends(verify_token)):
+    user_id = payload.get('id')
+    get_data = order_service.has_pending(user_id)
+    get_order_id = get_data.get('order_id')
+    get_order_data = order_service.for_checkout(get_order_id)
+    # view_order = [{'Order ID':g['order_id'],'Date':g['created_at'],'No. of order':g['order_count'],'Grand total':g['grand_total']} for g in get_order_data]
+    return get_order_data
 
 #ALWAYS UPDATE GIT
 #NOTE: jinbei is admin, brook is user only
-#ONGOING: delete order
+#ONGOING: testing, admin and normal user
 
 '''
-TO BE CONTINUE:  always update git
+TO BE CONTINUE:  
                  normal user - 
                  #view products
                  #add to cart
                  #view order
                  #update order
-                 delete order
+                 #delete order
                  checkout
                  #register
                  #login

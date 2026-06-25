@@ -151,7 +151,7 @@ class Order(Dbconnection):
     def create_new_order(self,user_id):
         self.db.ping(reconnect=True)
         dbcursor = self.db.cursor(dictionary=True,buffered=True)
-        query = 'select * from orders where user_id = %s'
+        query = 'select * from orders where user_id = %s and status = "pending"'
         dbcursor.execute(query,(user_id,))
         result = dbcursor.fetchone()
         dbcursor.close()
@@ -219,21 +219,22 @@ class Order(Dbconnection):
         result = dbcursor.fetchone()
         dbcursor.close()
         return result['order_counts']
-    def update_order_count(self,user_id,order_count):
+    def update_order_count(self,order_count):
         self.db.ping(reconnect=True)
         dbcursor = self.db.cursor(dictionary=True,buffered=True)
-        query = 'update orders set order_count = %s where user_id = %s'
-        dbcursor.execute(query,(order_count,user_id))
+        query = 'update orders set order_count = %s where status = "pending"'
+        dbcursor.execute(query,(order_count,))
         dbcursor.close()
         self.db.commit()
-    def view_order(self,user_id):
+    def view_order(self,order_id):
         self.db.ping(reconnect=True)
         dbcursor = self.db.cursor(dictionary=True,buffered=True)
-        query = '''select oi.product_id,oi.item_name,oi.quantity,oi.price,oi.total from orders as o 
-                   join order_item as oi on o.order_id = oi.order_id
-                   where o.user_id = %s and status = 'pending'
-                '''
-        dbcursor.execute(query,(user_id,))
+        # query = '''select oi.product_id,oi.item_name,oi.quantity,oi.price,oi.total from orders as o 
+        #            join order_item as oi on o.order_id = oi.order_id
+        #            where o.order_id = %s and status = 'pending'
+        #         '''
+        query = 'select product_id,item_name,quantity,price,total from order_item where order_id = %s'
+        dbcursor.execute(query,(order_id,))
         result = dbcursor.fetchall()
         dbcursor.close()
         return result
@@ -266,3 +267,12 @@ class Order(Dbconnection):
         dbcursor.execute(query,(product_id,))
         dbcursor.close()
         self.db.commit()
+    def for_checkout(self,order_id):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True, buffered=True)
+        query = 'select order_id,created_at,order_count,grand_total from orders where order_id = %s'
+        dbcursor.execute(query,(order_id,))
+        result = dbcursor.fetchone()
+        dbcursor.close()
+        return result
+
