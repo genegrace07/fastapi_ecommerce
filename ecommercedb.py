@@ -275,4 +275,18 @@ class Order(Dbconnection):
         result = dbcursor.fetchone()
         dbcursor.close()
         return result
-
+    def checkout(self,order_id):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True,buffered=True)
+        query = 'select order_id,created_at,order_count,grand_total from orders where order_id = %s'
+        dbcursor.execute(query,(order_id,))
+        result = dbcursor.fetchone()
+        dbcursor.close()
+        return result
+    def updated_status_completed(self,order_id):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True,buffered=True)
+        query = 'update orders set status = "completed" where order_id = %s'
+        dbcursor.execute(query,(order_id,))
+        dbcursor.close()
+        self.db.commit()

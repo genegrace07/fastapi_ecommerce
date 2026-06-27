@@ -116,14 +116,31 @@ async def delete_order(prod_id:int,order_service:Order=Depends(order_service),pa
 async def for_checkout(order_service:Order=Depends(order_service),payload:dict=Depends(verify_token)):
     user_id = payload.get('id')
     get_data = order_service.has_pending(user_id)
+    if not get_data:
+        return HTTPException(status_code=400,detail='no item to for checkout')
+    order_count = get_data['order_count']
+    if order_count == 0:
+        return HTTPException(status_code=400, detail='no item to for checkout')
     get_order_id = get_data.get('order_id')
     get_order_data = order_service.for_checkout(get_order_id)
-    # view_order = [{'Order ID':g['order_id'],'Date':g['created_at'],'No. of order':g['order_count'],'Grand total':g['grand_total']} for g in get_order_data]
     return get_order_data
+@order_router.get('/checkout')
+async def checkout(payload:dict=Depends(verify_token),order_service:Order=Depends(order_service)):
+    user_id = payload.get('id')
+    get_data = order_service.has_pending(user_id)
+    if not get_data:
+        return HTTPException(status_code=400,detail='no item to checkout')
+    order_count = get_data['order_count']
+    if order_count == 0:
+        return HTTPException(status_code=400, detail='no item to checkout')
+    get_order_id = get_data.get('order_id')
+    final_order = order_service.checkout(get_order_id)
+    order_service.updated_status_completed(get_order_id)
+    return {'order':final_order,'message':'Transaction Completed'}
 
 #ALWAYS UPDATE GIT
 #NOTE: jinbei is admin, brook is user only
-#ONGOING: testing, admin and normal user
+#ONGOING: testing, admin and normal user, checkout route
 
 '''
 TO BE CONTINUE:  
