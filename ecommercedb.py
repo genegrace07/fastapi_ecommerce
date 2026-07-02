@@ -39,6 +39,13 @@ class Product(Dbconnection):
         dbcursor.execute(query,(product_id,))
         dbcursor.close()
         self.db.commit()
+    def update_product_quantity(self,product_id,quantity):
+        self.db.ping(reconnect=True)
+        dbcursor = self.db.cursor(dictionary=True,buffered=True)
+        query = 'update product set quantity = quantity - %s where product_id = %s'
+        dbcursor.execute(query,(quantity,product_id))
+        dbcursor.close()
+        self.db.commit()
 class Users(Dbconnection):
     def get_users(self):
         self.db.ping(reconnect=True)
@@ -156,14 +163,14 @@ class Order(Dbconnection):
         result = dbcursor.fetchone()
         dbcursor.close()
         return result
-    def create_new_order_for_return_customer(self,user_id):
-        self.db.ping(reconnect=True)
-        dbcursor = self.db.cursor(dictionary=True,buffered=True)
-        query = 'select * from orders where user_id = %s and status = "pending"'
-        dbcursor.execute(query,(user_id,))
-        result = dbcursor.fetchone()
-        dbcursor.close()
-        return result
+    # def create_new_order_for_return_customer(self,user_id):
+    #     self.db.ping(reconnect=True)
+    #     dbcursor = self.db.cursor(dictionary=True,buffered=True)
+    #     query = 'select * from orders where user_id = %s and status = "pending"'
+    #     dbcursor.execute(query,(user_id,))
+    #     result = dbcursor.fetchone()
+    #     dbcursor.close()
+    #     return result
     def get_order(self,order_id):
         self.db.ping(reconnect=True)
         dbcursor = self.db.cursor(dictionary=True,buffered=True)
@@ -219,11 +226,11 @@ class Order(Dbconnection):
         result = dbcursor.fetchone()
         dbcursor.close()
         return result['order_counts']
-    def update_order_count(self,order_count):
+    def update_order_count(self,order_count,order_id):
         self.db.ping(reconnect=True)
         dbcursor = self.db.cursor(dictionary=True,buffered=True)
-        query = 'update orders set order_count = %s where status = "pending"'
-        dbcursor.execute(query,(order_count,))
+        query = 'update orders set order_count = %s where order_id = %s and status = "pending"'
+        dbcursor.execute(query,(order_count,order_id))
         dbcursor.close()
         self.db.commit()
     def view_order(self,order_id):
@@ -241,7 +248,7 @@ class Order(Dbconnection):
     def cancel_order(self,user_id):
         self.db.ping(reconnect=True)
         dbcursor = self.db.cursor(dictionary=True,buffered=True)
-        query = 'update orders set status = "cancel" where user_id = %s'
+        query = 'update orders set status = "canceled" where user_id = %s'
         dbcursor.execute(query,(user_id,))
         dbcursor.close()
         self.db.commit()

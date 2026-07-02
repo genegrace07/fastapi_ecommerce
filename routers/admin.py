@@ -113,4 +113,3 @@ async def user_activate(id:int,user_service:Users=Depends(user_service),payload:
         return HTTPException(status_code=400,detail='id already active')
     user_service.activate_user(id)
     return {'message':'user activated'}
-    #get_user_id(self,id): fetchone

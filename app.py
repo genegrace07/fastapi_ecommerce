@@ -36,7 +36,7 @@ normal - #view products
          #view order
          #update order
          #delete order
-         checkout
+         #checkout
 	     #register
 	     #login
 	     #change password admin login
@@ -50,29 +50,35 @@ admin - #view products
 	    #update password of user 
 
 DATABASE
-users > orders > order_items
-users > products
-products > order_items
-orders > order_items
+users > orders > order_items > products
 
 BACKEND (ROUTES)
 order
 /create_order
+/view_order
 /update
 /delete
+/for_checkout
 /checkout
-/view_order_summary
 
 products
-/view_products
-/delete_products - admin
-/update_products - admin
+/list_product
+/product_delete - admin
+/product_update - admin
 
 user
 /register
-/change_password
+/password_update - admin
 /delete_user - admin
-/update_password_of_any_user - admin
+
+admin
+/admin_registration
+/view_users
+/user_disable
+/user_activate
+/delete_user
+/product_update
+/product_delete
 
 AUTHENTICATION
 #generate token

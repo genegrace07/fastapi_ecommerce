@@ -23,9 +23,12 @@ async def create_order(id:int,quantity:int,payload:dict=Depends(verify_token),or
     customer_name = payload.get('username')
     total = quantity * get_product.get('price')
     price = get_product.get('price')
+    product_quantity = get_product.get('quantity')
     has_pending = order_services.has_pending(user_id)
     has_canceled = order_services.has_cancel(user_id)
 
+    if quantity > product_quantity:
+        return HTTPException(status_code=400,detail=f'not enough,only {product_quantity} left')
     if has_pending:
         order_id = has_pending['order_id']
 
@@ -39,18 +42,9 @@ async def create_order(id:int,quantity:int,payload:dict=Depends(verify_token),or
         grand_total = order_services.get_grand_total(order_id)
         order_services.update_grand_total(order_id, grand_total)
         order_count = order_services.get_order_count(order_id)
-        order_services.update_order_count(order_count)
+        order_services.update_order_count(order_count,order_id)
         return {'message':'cart update successfully'}
-    # if has_canceled:
-    #     order_services.create_order(user_id, customer_name)
-    #     get_order_id = order_services.create_new_order_for_return_customer(user_id)
-    #     order_id = get_order_id.get('order_id')
-    #     order_services.add_to_order_item(id, order_id, quantity, item_name, price, total)
-    #     grand_total = order_services.get_grand_total(order_id)
-    #     order_services.update_grand_total(order_id, grand_total)
-    #     # order_count = order_services.get_order_count(order_id)
-    #     # order_services.update_order_count(user_id, order_count)
-    #     return {'message': 'item added successfully'}
+
     order_services.create_order(user_id,customer_name)
     get_order_id = order_services.create_new_order(user_id)
     order_id = get_order_id.get('order_id')
@@ -58,7 +52,7 @@ async def create_order(id:int,quantity:int,payload:dict=Depends(verify_token),or
     grand_total = order_services.get_grand_total(order_id)
     order_services.update_grand_total(order_id, grand_total)
     order_count = order_services.get_order_count(order_id)
-    order_services.update_order_count(order_count)
+    order_services.update_order_count(order_count,order_id)
     print(order_count)
     return {'message':'item added successfully'}
 @order_router.get('/order_view')
@@ -68,19 +62,21 @@ async def view_order(payload:dict=Depends(verify_token),order_services:Order=Dep
     if not get_order_id:
         raise HTTPException(status_code=404, detail='cart is empty')
     order_id = get_order_id['order_id']
-    # if not order_id:
-    #     raise HTTPException(status_code=404,detail='cart is empty')
     orders = order_services.view_order(order_id)
     if not orders:
         raise HTTPException(status_code=404, detail='cart is empty')
     return orders
 @order_router.put('/order_update')
-async def update_order(id:int,quantity:int,order_service:Order=Depends(order_service),payload:dict=Depends(verify_token)):
+async def update_order(id:int,quantity:int,order_service:Order=Depends(order_service),product_services:Product=Depends(product_service),payload:dict=Depends(verify_token)):
     user_id = payload.get('id')
     get_order_id = order_service.create_new_order(user_id)
+    get_product = product_services.get_product(id)
+    product_quantity = get_product.get('quantity')
 
     if not get_order_id:
         raise HTTPException(status_code=404,detail='cart is empty')
+    if quantity > product_quantity:
+        return HTTPException(status_code=400,detail=f'not enough,only {product_quantity} left')
 
     order_id = get_order_id['order_id']
     get_orders = order_service.get_all_orders(order_id)
@@ -109,7 +105,7 @@ async def delete_order(prod_id:int,order_service:Order=Depends(order_service),pa
     grand_total = order_service.get_grand_total(order_id)
     order_service.update_grand_total(order_id, grand_total)
     order_count = order_service.get_order_count(order_id)
-    order_service.update_order_count(order_count)
+    order_service.update_order_count(order_count,order_id)
     return {'message':'successfully deleted'}
 
 @order_router.get('/for_checkout')
@@ -125,9 +121,10 @@ async def for_checkout(order_service:Order=Depends(order_service),payload:dict=D
     get_order_data = order_service.for_checkout(get_order_id)
     return get_order_data
 @order_router.get('/checkout')
-async def checkout(payload:dict=Depends(verify_token),order_service:Order=Depends(order_service)):
+async def checkout(payload:dict=Depends(verify_token),order_service:Order=Depends(order_service),product_service:Product=Depends(product_service)):
     user_id = payload.get('id')
     get_data = order_service.has_pending(user_id)
+
     if not get_data:
         return HTTPException(status_code=400,detail='no item to checkout')
     order_count = get_data['order_count']
@@ -136,60 +133,11 @@ async def checkout(payload:dict=Depends(verify_token),order_service:Order=Depend
     get_order_id = get_data.get('order_id')
     final_order = order_service.checkout(get_order_id)
     order_service.updated_status_completed(get_order_id)
+    all_orders = order_service.get_all_orders(get_order_id)
+    for item in all_orders:
+        product_service.update_product_quantity(item['product_id'],item['quantity'])
     return {'order':final_order,'message':'Transaction Completed'}
 
-#ALWAYS UPDATE GIT
-#NOTE: jinbei is admin, brook is user only
-#ONGOING: testing, admin and normal user, checkout route
-
-'''
-TO BE CONTINUE:  
-                 normal user - 
-                 #view products
-                 #add to cart
-                 #view order
-                 #update order
-                 #delete order
-                 checkout
-                 #register
-                 #login
-                 #change password admin login
-
-[
-  {
-    "user_id": 1,
-    "username": "admin",
-    "role": "admin"
-  },
-  {
-    "user_id": 3,
-    "username": "brook",
-    "role": "user"
-  },
-  {
-    "user_id": 19,
-    "username": "jinbei",
-    "role": "admin"
-  },
-  {
-    "user_id": 20,
-    "username": "sanji",
-    "role": "user"
-  },
-  {
-    "user_id": 21,
-    "username": "chopper",
-    "role": "user"
-  },
-  {
-    "user_id": 22,
-    "username": "franky",
-    "role": "admin"
-  },
-  {
-    "user_id": 23,
-    "username": "luffy",
-    "role": "user"
-  }
-]
-'''
+#reduce or less product stock after user add to cart, put it on checkout route
+#add condition if user is still active in verify
+#remove grey out or not using
