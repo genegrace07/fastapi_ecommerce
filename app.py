@@ -8,7 +8,6 @@ import mysql.connector
 import os
 from dotenv import load_dotenv
 from create_admin import create_admin
-from ecommercedb import Users
 
 app = FastAPI()
 app.include_router(product_router)

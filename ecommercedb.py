@@ -1,6 +1,4 @@
-import mysql.connector
 from dotenv import load_dotenv
-import os
 
 load_dotenv()
 
@@ -163,14 +161,6 @@ class Order(Dbconnection):
         result = dbcursor.fetchone()
         dbcursor.close()
         return result
-    # def create_new_order_for_return_customer(self,user_id):
-    #     self.db.ping(reconnect=True)
-    #     dbcursor = self.db.cursor(dictionary=True,buffered=True)
-    #     query = 'select * from orders where user_id = %s and status = "pending"'
-    #     dbcursor.execute(query,(user_id,))
-    #     result = dbcursor.fetchone()
-    #     dbcursor.close()
-    #     return result
     def get_order(self,order_id):
         self.db.ping(reconnect=True)
         dbcursor = self.db.cursor(dictionary=True,buffered=True)
@@ -236,10 +226,6 @@ class Order(Dbconnection):
     def view_order(self,order_id):
         self.db.ping(reconnect=True)
         dbcursor = self.db.cursor(dictionary=True,buffered=True)
-        # query = '''select oi.product_id,oi.item_name,oi.quantity,oi.price,oi.total from orders as o 
-        #            join order_item as oi on o.order_id = oi.order_id
-        #            where o.order_id = %s and status = 'pending'
-        #         '''
         query = 'select product_id,item_name,quantity,price,total from order_item where order_id = %s'
         dbcursor.execute(query,(order_id,))
         result = dbcursor.fetchall()

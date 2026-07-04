@@ -1,9 +1,8 @@
 from fastapi import APIRouter,Request,Depends,Form,HTTPException
-from fastapi.security import OAuth2PasswordBearer
 from ecommercedb import Users
 from model import User
 from passlib.hash import sha256_crypt
-from verify import verify_token
+
 
 user_router = APIRouter(prefix='/user',tags=['user'])
 def user_service(request:Request):

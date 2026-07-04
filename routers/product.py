@@ -1,4 +1,4 @@
-from fastapi import APIRouter,Request,Depends,HTTPException
+from fastapi import APIRouter,Request,Depends
 from ecommercedb import Product
 from verify import verify_token
 

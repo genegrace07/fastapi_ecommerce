@@ -4,8 +4,6 @@ from passlib.hash import sha256_crypt
 from jose import jwt
 from datetime import timedelta,datetime
 import os
-from dotenv import load_dotenv
-from verify import verify_token
 from ecommercedb import Users
 
 auth_router = APIRouter(prefix='/auth',tags=['auth'])

@@ -138,6 +138,4 @@ async def checkout(payload:dict=Depends(verify_token),order_service:Order=Depend
         product_service.update_product_quantity(item['product_id'],item['quantity'])
     return {'order':final_order,'message':'Transaction Completed'}
 
-#reduce or less product stock after user add to cart, put it on checkout route
-#add condition if user is still active in verify
 #remove grey out or not using
